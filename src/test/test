@@ -1,0 +1,229 @@
+package test;
+
+import org.junit.Assert;
+import org.junit.Before;
+
+import java.io.FileReader;
+import java.io.IOException;
+
+import org.junit.After;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
+
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
+
+public class OrangeHRM {
+	 
+	public static String browser;
+	static WebDriver driver;
+//	String CSV_file = "C:\\Users\\Zahratul Rahmi\\Downloads\\TestData.csv";
+//	private CSVReader csvReader;
+//	String[] csvCell;
+	
+	public static void main(String[] args) throws CsvValidationException, IOException {
+		OrangeHRM test = new OrangeHRM();
+		test.setBrowser("Chrome");
+		test.setBrowserConfig();
+		test.setup();
+		test.navigateToURL();
+		test.loginFailed();
+		test.login();
+		test.menuEmployeeList();
+		test.searchEmployee();
+		test.resetEmployee();
+//		test.menuUsers();
+//		test.searchUser();
+//		test.exit();
+	}
+	
+	public void setBrowser(String browser) {
+		this.browser = browser;
+	}
+	
+	public void setBrowserConfig() {
+		String projectLocation = System.getProperty("user.dir");
+		
+		if(browser.contains("Chrome")) {
+			System.setProperty("webdriver.chrome.driver", projectLocation + "\\lib\\driver\\chromedriver.exe");
+			driver = new ChromeDriver();
+		}
+		
+		if(browser.contains("Firefox")) {
+			System.setProperty("webdriver.gecko.driver", projectLocation + "\\lib\\driver\\geckodriver.exe");
+			driver = new FirefoxDriver();
+		}
+	}
+	
+	@Before
+    public void setup() {
+        driver.manage().window().maximize();    
+    }
+	
+//	@Test
+//	public void login1() throws IOException, CsvValidationException {
+//		csvReader = new CSVReader(new FileReader(CSV_file));
+//	
+//		By inputUsername = By.id("txtUsername");
+//		By inputPassword = By.id("txtPassword");
+//		By btnLogin = By.id("btnLogin");
+//		
+//		while ((csvCell = csvReader.readNext()) != null) {
+//			
+//				String userName = csvCell[0];
+//				String password = csvCell[1];
+//				String expectedMessage = "Invalid credentials";
+//				String actualMessage = driver.findElement(By.id("spanMessage")).getText();
+//				
+//				driver.findElement(inputUsername).sendKeys(userName);
+//				driver.findElement(inputPassword).sendKeys(password);
+//				driver.findElement(btnLogin).click();	
+//				
+////				if (expectedMessage = actualMessage != null) {
+////					System.out.println("Login failed");
+////				} else {
+////					System.out.println("Login passed");
+////				}
+//		}
+//	}
+	
+	@Test
+	public void navigateToURL() {
+		driver.get("https://qa.cilsy.id/symfony/web/index.php/auth/login");
+		String expectedTitle = "OrangeHRM";
+		String actualTitle = driver.getTitle();
+		
+		Assert.assertEquals(actualTitle, expectedTitle);
+		System.out.println("Success navigate to URL");
+	}
+
+	@Test
+	public void loginFailed() {
+		By inputUsername = By.id("txtUsername");
+		By inputPassword = By.id("txtPassword");
+		By btnLogin = By.id("btnLogin");
+		
+		driver.findElement(inputUsername).sendKeys("Admin");
+		driver.findElement(inputPassword).sendKeys("1345678");
+		driver.findElement(btnLogin).click();
+		
+		String expectedMessage = "Invalid credentials";
+		String actualMessage = driver.findElement(By.id("spanMessage")).getText();
+		Assert.assertEquals(expectedMessage, actualMessage);
+		System.out.println("Login failed");
+	}
+	
+	@Test
+	public void login() {
+		By inputUsername = By.id("txtUsername");
+		By inputPassword = By.id("txtPassword");
+		By btnLogin = By.id("btnLogin");
+		
+		driver.findElement(inputUsername).sendKeys("Admin");
+		driver.findElement(inputPassword).sendKeys("s3Kol4HQA!*");
+		driver.findElement(btnLogin).click();
+		
+		String expectedResult = "Welcome Anfo";
+		String actualResult = driver.findElement(By.id("welcome")).getText();
+		Assert.assertEquals(expectedResult, actualResult);
+		System.out.println("Login passed");
+	}
+	
+	@Test
+	public void menuEmployeeList() {
+		Actions builder = new Actions(driver);
+		WebElement PIM = driver.findElement(By.id("menu_pim_viewPimModule"));
+		builder.moveToElement(PIM).build().perform();
+		
+		By menuEmployeeList = By.id("menu_pim_viewEmployeeList");
+		driver.findElement(menuEmployeeList).click();
+			
+		String actualResult = driver.findElement(By.xpath("//h1[contains(text(),'Employee Information')]")).getText();
+		String expectedResult = "Employee Information";
+		Assert.assertEquals(expectedResult, actualResult);
+		System.out.println("Employee List page opened");
+	}
+	
+	@Test
+	public void searchEmployee() {
+		By inputSearchEmployeeName = By.id("empsearch_employee_name_empName");
+		By btnSearch = By.id("searchBtn");
+			
+		driver.findElement(inputSearchEmployeeName).sendKeys("Zahra ");
+		driver.findElement(btnSearch).click();
+		String actualResult = driver.findElement(By.linkText("Zahra test")).getText();
+		String expectedResult = "Zahra test";
+		Assert.assertEquals(expectedResult, actualResult);
+		System.out.println("Search employee passed");
+	}
+	
+	@Test
+	public void resetEmployee() {
+		By btnReset = By.id("resetBtn");
+		
+		driver.findElement(btnReset).click();
+			
+		String actualResult = driver.findElement(By.xpath("//h1[contains(text(),'Employee Information')]")).getText();
+		String expectedResult = "Employee Information";
+		Assert.assertEquals(expectedResult, actualResult);
+		System.out.println("Reset employee passed");
+	}
+	
+	@Test
+	public void menuUsers() {
+		Actions builder = new Actions(driver);
+		WebElement admin = driver.findElement(By.id("menu_admin_viewAdminModule"));
+		WebElement userManagement = driver.findElement(By.id("menu_admin_UserManagement"));
+		builder.moveToElement(admin).build().perform();
+		builder.moveToElement(userManagement).build().perform();
+		
+		By menuUsers = By.id("menu_admin_viewAdminModule");
+		driver.findElement(menuUsers).click();
+			
+		String actualResult = driver.findElement(By.xpath("//*[@id=\"systemUser-information\"]/div[1]/h1")).getText();
+		String expectedResult = "System Users";
+		Assert.assertEquals(expectedResult, actualResult);
+		System.out.println("System Users page opened");
+	}
+	
+	@Test
+	public void searchUser() {
+		By btnSearch = By.id("searchBtn");
+		By inputSearchUserName = By.id("searchSystemUser_userName");
+		By btnReset = By.id("resetBtn");
+			
+		WebElement selectSysUsers = driver.findElement(By.id("searchSystemUser_userType"));
+		Select dropdown = new Select (selectSysUsers);
+		dropdown.selectByValue("2");
+		driver.findElement(btnSearch).click();
+		
+		driver.findElement(btnReset).click();
+		
+		driver.findElement(inputSearchUserName).sendKeys("Admin");
+		driver.findElement(btnSearch).click();
+		String actualResult3 = driver.findElement(By.linkText("Admin")).getText();
+		String expectedResult3 = "Admin";
+		Assert.assertEquals(expectedResult3, actualResult3);
+
+		driver.findElement(inputSearchUserName).clear();
+		System.out.println("Search and reset user passed");
+	}
+	
+	
+	
+	
+	
+	@After
+    public void exit() {
+        driver.close();
+        driver.quit();
+    }
+	
+	
+}
